@@ -7,10 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Roboto Condensed', sans-serif; background-color: #05080f; color: #ffffff; margin: 0; padding: 0; }
-        .card-main { background: #0b121f; border: 1px solid #1e293b; transition: all 0.3s ease; border-radius: 12px; }
+        body { font-family: 'Roboto Condensed', sans-serif; background-color: #05080f; color: #ffffff; }
+        .card-main { background: #0b121f; border: 1px solid #1e293b; border-radius: 12px; transition: all 0.3s ease; }
         
-        /* Estilo de los iconos (Letras) */
+        /* Icono/Letra Naranja interactivo */
         .memetic-icon { 
             width: 80px; height: 80px; background: #f39c12; border-radius: 16px; 
             display: flex; align-items: center; justify-content: center; 
@@ -18,19 +18,15 @@
             flex-shrink: 0; border: 4px solid #000; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
-        /* Solo el admin puede hacer clic en los iconos */
-        body.is-admin .memetic-icon { cursor: pointer; transition: transform 0.2s; }
+        body.is-admin .memetic-icon { cursor: pointer; }
         body.is-admin .memetic-icon:hover { transform: scale(1.05); border-color: #fff; }
 
-        .tag-orange { color: #f39c12; font-weight: 700; font-style: italic; }
-        
-        /* Modal Login Diseño Exacto image_d123bf */
-        #loginModal { background: rgba(0,0,0,0.9); }
-        .login-box { background: #0d1421; border: 1px solid rgba(243, 156, 18, 0.2); border-radius: 8px; width: 100%; max-width: 400px; padding: 40px; }
-        .login-input { background: #05080f; border: 1px solid #1e293b; color: white; padding: 12px; width: 100%; border-radius: 4px; outline: none; margin-bottom: 15px; text-align: center; }
+        /* Estilos de Input y Botones del Modal */
+        .login-input { background: #05080f; border: 1px solid #1e293b; color: white; padding: 14px; width: 100%; border-radius: 8px; outline: none; text-align: left; }
         .login-input:focus { border-color: #f39c12; }
-        .btn-login { background: linear-gradient(to bottom, #f39c12, #d35400); color: white; font-weight: 900; text-transform: uppercase; width: 100%; padding: 14px; border-radius: 4px; border: none; cursor: pointer; }
-        .btn-login:hover { filter: brightness(1.1); }
+        .btn-orange { background: linear-gradient(to bottom, #f39c12, #d35400); color: white; font-weight: 900; text-transform: uppercase; padding: 16px; border-radius: 8px; width: 100%; transition: 0.2s; }
+        .btn-orange:hover { filter: brightness(1.1); }
+        .tag-orange { color: #f39c12; font-weight: 700; }
     </style>
 </head>
 <body class="p-6 md:p-12">
@@ -38,34 +34,34 @@
     <div class="max-w-7xl mx-auto">
         <header class="flex justify-between items-center mb-12">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 bg-[#f39c12] rounded-lg flex items-center justify-center font-black text-black text-3xl shadow-lg">M</div>
+                <div class="w-14 h-14 bg-[#f39c12] rounded-lg flex items-center justify-center font-black text-black text-3xl">M</div>
                 <div>
                     <h1 class="text-4xl font-black italic uppercase leading-none">MEMETIC<span class="text-[#f39c12]">DB</span></h1>
                     <p class="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Way of Winter Edition</p>
                 </div>
             </div>
-            <button id="adminBtn" onclick="handleAuthClick()" class="bg-[#1a2436] border border-gray-800 text-gray-400 px-4 py-2 rounded text-[10px] font-bold uppercase flex items-center gap-2 hover:text-white transition-all">
-                <span id="lockIcon">🔒</span> <span id="adminText">ADMIN LOGIN</span>
+            <button id="authBtn" onclick="toggleAuth()" class="bg-[#1a2436] border border-gray-800 text-gray-400 px-4 py-2 rounded text-[10px] font-bold uppercase hover:text-white transition-all">
+                <span id="lockStatus">🔒</span> <span id="authText">ADMIN LOGIN</span>
             </button>
         </header>
 
         <div class="flex gap-4 mb-16">
-            <input type="text" id="searchInput" onkeyup="filterItems()" placeholder="Buscar especialización..." class="bg-[#0b121f] border border-gray-800 flex-grow rounded-lg py-5 px-8 outline-none text-lg focus:border-[#f39c12]/50">
-            <div class="bg-[#0b121f] border border-gray-800 px-10 flex items-center rounded-lg border-b-4 border-[#f39c12] shadow-xl">
-                <span class="text-4xl font-black text-[#f39c12]" id="totalCounter">0</span>
+            <input type="text" id="searchInput" onkeyup="filter()" placeholder="Buscar especialización..." class="bg-[#0b121f] border border-gray-800 flex-grow rounded-lg py-5 px-8 outline-none text-lg focus:border-[#f39c12]/50">
+            <div class="bg-[#0b121f] border border-gray-800 px-10 flex items-center rounded-lg border-b-4 border-[#f39c12]">
+                <span class="text-4xl font-black text-[#f39c12]" id="mainCount">0</span>
             </div>
         </div>
 
-        <div id="contentContainer" class="space-y-20"></div>
+        <div id="content" class="space-y-20"></div>
     </div>
 
-    <div id="loginModal" class="fixed inset-0 hidden z-50 flex items-center justify-center p-4">
-        <div class="login-box text-center shadow-2xl">
-            <h2 class="text-2xl font-black italic uppercase mb-8 tracking-widest text-white">EDITOR ACCESS</h2>
-            <input type="text" id="userInput" placeholder="User" class="login-input">
-            <input type="password" id="passInput" placeholder="Password" class="login-input">
-            <button onclick="attemptLogin()" class="btn-login shadow-lg">LOGIN</button>
-            <button onclick="closeModals()" class="text-[10px] text-gray-500 uppercase mt-6 block mx-auto hover:text-gray-300">Cancel</button>
+    <div id="loginModal" class="fixed inset-0 bg-black/90 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-[#0d1421] border border-[#f39c12]/20 p-10 rounded-lg w-full max-w-[400px] text-center">
+            <h2 class="text-2xl font-black italic uppercase mb-8 tracking-widest">EDITOR ACCESS</h2>
+            <input type="text" id="userIn" placeholder="User" class="login-input mb-4 text-center">
+            <input type="password" id="passIn" placeholder="Password" class="login-input mb-6 text-center">
+            <button onclick="login()" class="btn-orange">LOGIN</button>
+            <button onclick="closeModals()" class="text-[10px] text-gray-500 uppercase mt-6 block mx-auto">Cancel</button>
         </div>
     </div>
 
@@ -73,60 +69,61 @@
         <div class="bg-[#0d1421] border border-gray-800 p-8 rounded-2xl w-full max-w-2xl shadow-2xl">
             <h2 class="text-3xl font-black italic uppercase mb-8 text-[#f39c12]">EDITOR DE MEMÉTICA</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-4 text-center">
-                    <div id="previewBox" class="w-full aspect-square bg-black border-2 border-dashed border-gray-800 rounded-2xl flex items-center justify-center overflow-hidden font-black text-gray-700">SIN IMAGEN</div>
-                    <input type="text" id="editImageUrl" placeholder="Pegar URL de imagen..." class="login-input text-xs" onchange="updatePreview(this.value)">
+                <div class="space-y-4">
+                    <div id="prevBox" class="w-full aspect-square bg-black border border-gray-800 rounded-2xl flex items-center justify-center overflow-hidden font-black text-gray-800">SIN IMAGEN</div>
+                    <input type="text" id="editImgUrl" placeholder="Pegar URL de imagen..." class="login-input text-xs" onchange="updatePrev(this.value)">
                     <label class="block w-full py-3 bg-gray-800 text-center rounded-lg text-[10px] font-black uppercase cursor-pointer hover:bg-gray-700">
-                        <span class="text-[#f39c12]">■</span> SUBIR DESDE PC
-                        <input type="file" class="hidden" accept="image/*" onchange="handleFileSelect(this)">
+                        📁 SUBIR DESDE PC
+                        <input type="file" class="hidden" accept="image/*" onchange="handleFile(this)">
                     </label>
                 </div>
                 <div class="space-y-4">
-                    <input type="text" id="editName" placeholder="Nombre de la especialización" class="login-input font-bold text-left">
-                    <textarea id="editDesc" placeholder="Descripción de efectos..." class="login-input h-40 text-sm text-left"></textarea>
+                    <input type="text" id="editName" placeholder="Nombre" class="login-input font-bold">
+                    <textarea id="editDesc" placeholder="Descripción..." class="login-input h-40 text-sm"></textarea>
                 </div>
             </div>
             <div class="flex gap-4 mt-10">
-                <button onclick="saveChanges()" class="btn-login flex-grow py-5 rounded-xl text-black">GUARDAR CAMBIOS</button>
-                <button onclick="closeModals()" class="px-10 py-5 bg-gray-800 text-gray-400 rounded-xl font-black uppercase text-xs">Cancelar</button>
+                <button onclick="save()" class="btn-orange flex-grow">GUARDAR CAMBIOS</button>
+                <button onclick="closeModals()" class="px-10 bg-gray-800 text-gray-400 rounded-lg font-black uppercase text-xs">Cancelar</button>
             </div>
         </div>
     </div>
 
     <script>
         let isAdmin = localStorage.getItem('is_admin') === 'true';
-        let memeticData = { groups: {}, groupMeta: {} };
+        let dataStore = { groups: {}, groupMeta: {} };
+        let currentId = null;
 
         async function init() {
             if (isAdmin) {
                 document.body.classList.add('is-admin');
-                document.getElementById('adminText').innerText = "LOGOUT";
-                document.getElementById('lockIcon').innerText = "🔓";
+                document.getElementById('authText').innerText = "LOGOUT";
+                document.getElementById('lockStatus').innerText = "🔓";
             }
-            await fetchData();
+            await load();
         }
 
-        async function fetchData() {
+        async function load() {
             const res = await fetch('/api/get_memetics');
-            memeticData = await res.json();
+            dataStore = await res.json();
             render();
         }
 
         function render() {
-            const container = document.getElementById('contentContainer');
+            const container = document.getElementById('content');
             container.innerHTML = '';
             let total = 0;
 
-            Object.keys(memeticData.groupMeta).forEach(gid => {
-                const items = memeticData.groups[gid] || [];
+            Object.keys(dataStore.groupMeta).forEach(gid => {
+                const items = dataStore.groups[gid] || [];
                 total += items.length;
                 const section = document.createElement('div');
                 section.innerHTML = `
-                    <h3 class="text-xl font-black italic uppercase mb-8 border-l-4 border-[#f39c12] pl-4 text-[#f39c12] tracking-tighter">${memeticData.groupMeta[gid].title}</h3>
+                    <h3 class="text-xl font-black italic uppercase mb-8 border-l-4 border-[#f39c12] pl-4 text-[#f39c12]">${dataStore.groupMeta[gid].title}</h3>
                     <div class="grid gap-6 md:grid-cols-2">
                         ${items.map(item => `
                             <div class="card-main p-6 flex gap-6">
-                                <div onclick="openItemEditor('${item.id}')" class="memetic-icon">
+                                <div onclick="openEditor('${item.id}')" class="memetic-icon">
                                     ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover rounded-xl">` : `<span>${item.name[0]}</span>`}
                                 </div>
                                 <div class="flex-1">
@@ -140,69 +137,83 @@
                     </div>`;
                 container.appendChild(section);
             });
-            document.getElementById('totalCounter').innerText = total;
+            document.getElementById('mainCount').innerText = total;
         }
 
-        // --- Funciones de Autenticación ---
-        function handleAuthClick() {
-            if (isAdmin) {
-                localStorage.clear();
-                location.reload();
-            } else {
-                document.getElementById('loginModal').classList.remove('hidden');
-            }
-        }
-
-        async function attemptLogin() {
-            const user = document.getElementById('userInput').value;
-            const pass = document.getElementById('passInput').value;
-            
+        async function login() {
+            const user = document.getElementById('userIn').value;
+            const pass = document.getElementById('passIn').value;
             const res = await fetch('/api/auth', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user, pass })
             });
-
             const data = await res.json();
-            if (data.auth) {
-                localStorage.setItem('is_admin', 'true');
+            if (data.auth) { localStorage.setItem('is_admin', 'true'); location.reload(); }
+            else { alert("Acceso Denegado"); }
+        }
+
+        function openEditor(id) {
+            if (!isAdmin) return;
+            currentId = id;
+            let item;
+            Object.values(dataStore.groups).flat().forEach(i => { if(i.id == id) item = i; });
+            
+            if (item) {
+                document.getElementById('editName').value = item.name;
+                document.getElementById('editDesc').value = item.desc;
+                document.getElementById('editImgUrl').value = item.image || '';
+                updatePrev(item.image);
+            }
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        async function save() {
+            const name = document.getElementById('editName').value;
+            const desc = document.getElementById('editDesc').value;
+            const image = document.getElementById('editImgUrl').value;
+
+            const res = await fetch('/api/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: currentId, name, desc, image, auth_token: 'is_admin_true' })
+            });
+
+            if (res.ok) {
+                alert("Guardado en Neon correctamente");
                 location.reload();
             } else {
-                alert("Acceso Denegado");
+                alert("Error al guardar");
             }
         }
 
-        // --- Funciones del Editor ---
-        let currentEditingId = null;
-
-        function openItemEditor(id) {
-            if (!isAdmin) return;
-            currentEditingId = id;
-            document.getElementById('editModal').classList.remove('hidden');
-            // Aquí cargarías los datos actuales del item en los inputs
-        }
-
-        function handleFileSelect(input) {
+        function handleFile(input) {
             if (input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = (e) => updatePreview(e.target.result);
+                reader.onload = (e) => {
+                    document.getElementById('editImgUrl').value = e.target.result;
+                    updatePrev(e.target.result);
+                };
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function updatePreview(src) {
-            const box = document.getElementById('previewBox');
+        function updatePrev(src) {
+            const box = document.getElementById('prevBox');
             box.innerHTML = src ? `<img src="${src}" class="w-full h-full object-cover">` : "SIN IMAGEN";
         }
 
-        function closeModals() {
-            document.querySelectorAll('#loginModal, #editModal').forEach(m => m.classList.add('hidden'));
+        function toggleAuth() {
+            if (isAdmin) { localStorage.clear(); location.reload(); }
+            else { document.getElementById('loginModal').classList.remove('hidden'); }
         }
 
-        function filterItems() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            document.querySelectorAll('.card-main').forEach(card => {
-                card.style.display = card.innerText.toLowerCase().includes(query) ? 'flex' : 'none';
+        function closeModals() { document.querySelectorAll('#loginModal, #editModal').forEach(m => m.classList.add('hidden')); }
+
+        function filter() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.card-main').forEach(c => {
+                c.style.display = c.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
             });
         }
 
