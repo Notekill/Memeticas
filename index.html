@@ -8,10 +8,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,700;1,900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Roboto Condensed', sans-serif; background-color: #05080f; color: #ffffff; }
+        body { font-family: 'Roboto Condensed', sans-serif; background-color: #05080f; color: #ffffff; letter-spacing: 0.02em; }
         .search-container { background-color: #0d1421; border: 1px solid #1a2436; }
-        .card-main { background-color: #0b121f; border: 1px solid #1e293b; transition: 0.3s; }
-        .btn-orange { background: linear-gradient(to bottom, #f39c12, #d35400); }
+        .card-main { background-color: #0b121f; border: 1px solid #1e293b; transition: transform 0.2s; }
+        .btn-orange { background: linear-gradient(to bottom, #f39c12, #d35400); box-shadow: 0 4px 15px rgba(211, 84, 0, 0.3); }
         .tag-orange { background: rgba(243, 156, 18, 0.1); border: 1px solid rgba(243, 156, 18, 0.3); color: #f39c12; }
         .modal-overlay { background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); display: none; }
     </style>
@@ -20,13 +20,13 @@
     <div class="max-w-6xl mx-auto">
         <header class="flex justify-between items-center mb-10">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-amber-500 rounded flex items-center justify-center font-black text-black text-2xl italic">M</div>
+                <div class="w-14 h-14 bg-amber-500 rounded-lg flex items-center justify-center italic font-black text-black text-3xl">M</div>
                 <div>
-                    <h1 class="text-3xl font-black italic uppercase tracking-tighter">MEMETIC<span class="text-amber-500">DB</span></h1>
-                    <p class="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Way of Winter Edition</p>
+                    <h1 class="text-4xl font-black italic uppercase leading-none">MEMETIC<span class="text-amber-500">DB</span></h1>
+                    <p class="text-[10px] text-gray-500 font-bold tracking-[0.3em] uppercase">Way of Winter Edition</p>
                 </div>
             </div>
-            <button id="authBtn" onclick="openLogin()" class="text-gray-500 hover:text-white border border-gray-800 px-4 py-2 rounded text-xs font-bold uppercase transition-all">🔒 Login</button>
+            <button id="authBtn" onclick="toggleAuth()" class="border border-gray-700 text-gray-500 px-4 py-2 rounded text-xs font-bold uppercase hover:text-white transition">🔒 Login</button>
         </header>
 
         <div class="flex gap-4 mb-10">
@@ -36,33 +36,34 @@
             </div>
         </div>
 
-        <div id="groupsContainer" class="space-y-12">
-            <div class="text-center py-20 text-gray-600 animate-pulse uppercase font-bold tracking-widest">Conectando con Neon...</div>
+        <div id="groupsContainer" class="space-y-16">
+            <div class="text-center py-20 text-gray-600 animate-pulse uppercase font-bold tracking-widest">Cargando datos de Neon...</div>
         </div>
     </div>
 
     <div id="loginModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center">
         <div class="bg-[#0d1421] border border-amber-500 p-8 rounded-lg w-full max-w-sm">
             <h2 class="text-xl font-black uppercase mb-6 text-center italic text-white">Acceso Editor</h2>
-            <input type="text" id="user" placeholder="Usuario" class="w-full bg-black border border-gray-800 p-4 rounded mb-3 text-white outline-none">
-            <input type="password" id="pass" placeholder="Contraseña" class="w-full bg-black border border-gray-800 p-4 rounded mb-6 text-white outline-none">
-            <button onclick="handleLogin()" class="w-full py-4 btn-orange rounded font-bold uppercase text-black">Entrar</button>
-            <button onclick="closeModal()" class="w-full mt-4 text-xs text-gray-600 uppercase">Cerrar</button>
+            <input type="text" id="user" placeholder="Usuario" class="w-full bg-black border border-gray-800 p-3 rounded mb-3 text-white">
+            <input type="password" id="pass" placeholder="Contraseña" class="w-full bg-black border border-gray-800 p-3 rounded mb-6 text-white">
+            <button onclick="handleLogin()" class="w-full py-3 btn-orange rounded font-bold uppercase text-black">Ingresar</button>
+            <button onclick="closeModal()" class="w-full mt-4 text-[10px] text-gray-600 uppercase">Cerrar</button>
         </div>
     </div>
 
     <script>
-        let rawData = null;
         let isAdmin = localStorage.getItem('admin') === 'true';
+        let rawData = null;
 
+        // CARGA PÚBLICA SIN BLOQUEOS
         async function loadData() {
             try {
-                // Petición directa sin bloqueos de login
                 const res = await fetch('/api/get_memetics'); 
                 rawData = await res.json();
                 renderApp();
             } catch (err) {
-                document.getElementById('groupsContainer').innerHTML = "<div class='text-red-500 text-center font-bold'>ERROR AL CARGAR DATOS DE NEON</div>";
+                console.error("Error Neon:", err);
+                document.getElementById('groupsContainer').innerHTML = "<div class='text-center text-red-500 uppercase font-black'>Error de conexión con la base de datos</div>";
             }
         }
 
@@ -78,18 +79,21 @@
 
                 const section = document.createElement('div');
                 section.innerHTML = `
-                    <h3 class="text-xl font-black uppercase italic text-amber-500 mb-6 border-l-4 border-amber-500 pl-4">${group.name}</h3>
+                    <div class="flex items-center gap-4 mb-6">
+                        <h3 class="text-2xl font-black uppercase italic text-amber-500">${group.name}</h3>
+                        <div class="h-[1px] bg-gray-800 flex-grow"></div>
+                    </div>
                     <div class="grid gap-4 md:grid-cols-2">
                         ${items.map(item => `
-                            <div class="card-main p-6 rounded flex gap-5">
-                                <div class="w-16 h-16 shrink-0 bg-amber-500 rounded-full flex items-center justify-center border-4 border-black overflow-hidden shadow-lg">
+                            <div class="card-main rounded p-5 flex gap-5">
+                                <div class="w-16 h-16 shrink-0 bg-amber-500 rounded-full flex items-center justify-center border-4 border-black overflow-hidden shadow-xl">
                                     ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<span class="text-2xl font-black text-black italic">${item.name.charAt(0)}</span>`}
                                 </div>
                                 <div>
-                                    <h4 class="text-white font-bold uppercase italic">${item.name}</h4>
-                                    <p class="text-gray-400 text-sm mt-2">${item.description}</p>
-                                    <div class="flex gap-2 mt-3">
-                                        ${(item.levels || '').split(',').map(l => `<span class="tag-orange px-2 py-0.5 rounded text-[10px] font-bold">${l.trim()}</span>`).join('')}
+                                    <h2 class="text-white font-bold uppercase italic">${item.name}</h2>
+                                    <div class="border-l-2 border-amber-500/20 pl-3 my-2 text-xs text-gray-400 leading-snug">${item.description}</div>
+                                    <div class="flex gap-2">
+                                        ${(item.levels || '').split(',').map(l => l.trim() ? `<span class="tag-orange px-2 py-0.5 rounded text-[9px] font-bold uppercase">${l.trim()}</span>` : '').join('')}
                                     </div>
                                 </div>
                             </div>
@@ -98,19 +102,17 @@
                 container.appendChild(section);
             });
             document.getElementById('totalCount').innerText = total;
-            
+
             if(isAdmin) {
                 document.getElementById('authBtn').innerText = "🔓 Logout";
                 document.getElementById('authBtn').classList.add('text-amber-500', 'border-amber-500');
             }
         }
 
-        function openLogin() { 
+        function toggleAuth() {
             if(isAdmin) { localStorage.removeItem('admin'); location.reload(); }
             else { document.getElementById('loginModal').style.display = 'flex'; }
         }
-
-        function closeModal() { document.getElementById('loginModal').style.display = 'none'; }
 
         async function handleLogin() {
             const user = document.getElementById('user').value;
@@ -120,9 +122,15 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user, pass })
             });
-            if (res.ok) { localStorage.setItem('admin', 'true'); location.reload(); }
-            else { alert("Credenciales incorrectas"); }
+            if (res.ok) {
+                localStorage.setItem('admin', 'true');
+                location.reload();
+            } else {
+                alert("Acceso denegado: Credenciales inválidas.");
+            }
         }
+
+        function closeModal() { document.getElementById('loginModal').style.display = 'none'; }
 
         function filterItems() {
             const t = document.getElementById('searchInput').value.toLowerCase();
