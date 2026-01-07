@@ -3,120 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MemeticDB - Editor</title>
+    <title>MemeticDB - Way of Winter</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,700;1,900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Roboto Condensed', sans-serif; background-color: #05080f; color: #ffffff; }
-        .card-main { background: #0b121f; border: 1px solid #1e293b; border-radius: 12px; }
+        body { font-family: 'Roboto Condensed', sans-serif; background-color: #05080f; color: #ffffff; letter-spacing: 0.02em; }
+        .search-container { background-color: #0d1421; border: 1px solid #1a2436; }
+        .card-main { background-color: #0b121f; border: 1px solid #1e293b; transition: all 0.3s ease; }
+        .card-main:hover { border-color: #f39c12; }
+        
+        /* Icono/Letra Naranja (Tu diseño original) */
         .memetic-icon { 
-            width: 80px; height: 80px; background: #f39c12; border-radius: 16px; 
+            width: 80px; height: 80px; background: #f39c12; border-radius: 12px; 
             display: flex; align-items: center; justify-content: center; 
             font-size: 40px; font-weight: 900; color: #000; font-style: italic;
             flex-shrink: 0; border: 4px solid #000; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
-        /* Solo si es admin, las letras se ven como botones */
-        body.is-admin .memetic-icon { cursor: pointer; transition: 0.2s; }
-        body.is-admin .memetic-icon:hover { transform: scale(1.1); border-color: white; }
-        
-        .editor-input { background: #05080f; border: 1px solid #1e293b; color: white; padding: 12px; width: 100%; border-radius: 8px; outline: none; }
-        .btn-save { background: linear-gradient(to bottom, #f39c12, #d35400); color: white; font-weight: 900; padding: 16px; border-radius: 8px; width: 100%; }
+        body.is-admin .memetic-icon { cursor: pointer; }
+        body.is-admin .memetic-icon:hover { transform: scale(1.05); border-color: #fff; }
+
+        .btn-orange { background: linear-gradient(to bottom, #f39c12, #d35400); box-shadow: 0 4px 15px rgba(211, 84, 0, 0.3); }
+        .tag-orange { color: #f39c12; font-weight: 700; }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.9); backdrop-filter: blur(8px); }
     </style>
 </head>
-<body class="p-6">
+<body class="p-4 md:p-10 min-h-screen">
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-6xl mx-auto">
         <header class="flex justify-between items-center mb-10">
-            <h1 class="text-3xl font-black italic uppercase">MEMETIC<span class="text-[#f39c12]">DB</span></h1>
-            <button onclick="toggleAuth()" id="authBtn" class="text-[10px] font-bold border border-gray-800 px-4 py-2 rounded">
-                ADMIN LOGIN
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-[#f39c12] rounded-lg flex items-center justify-center font-black text-black text-3xl italic">M</div>
+                <div>
+                    <h1 class="text-4xl font-black italic uppercase leading-none">MEMETIC<span class="text-[#f39c12]">DB</span></h1>
+                    <p class="text-[11px] text-gray-500 font-bold tracking-[0.3em] uppercase mt-1">Way of Winter Edition</p>
+                </div>
+            </div>
+            <button id="authBtn" onclick="toggleAuth()" class="border border-gray-600 text-gray-400 px-4 py-2 rounded uppercase text-xs font-bold hover:text-white">
+                <span id="lockStatus">🔒</span> <span id="authText">ADMIN LOGIN</span>
             </button>
         </header>
 
-        <div id="content" class="grid gap-6 md:grid-cols-2"></div>
+        <div class="flex flex-col md:flex-row gap-4 mb-16">
+            <input type="text" id="searchInput" onkeyup="filter()" placeholder="BUSCAR POR NOMBRE O #TAG (EJ: #AMMO)..." 
+                class="search-container flex-grow rounded-md py-5 px-8 outline-none text-lg text-gray-300">
+            <div class="search-container rounded-md px-10 flex items-center border-b-4 border-[#f39c12]">
+                <span class="text-3xl font-black text-[#f39c12]" id="totalCount">0</span>
+            </div>
+        </div>
+
+        <div id="mainContainer" class="space-y-20"></div>
     </div>
 
-    <div id="editModal" class="fixed inset-0 bg-black/95 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-[#0d1421] border border-gray-800 p-8 rounded-2xl w-full max-w-2xl">
-            <h2 class="text-2xl font-black italic uppercase mb-6 text-[#f39c12]">EDITAR ESPECIALIZACIÓN</h2>
-            
+    <div id="editModal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-[#0d1421] border border-gray-800 p-8 rounded-2xl w-full max-w-2xl shadow-2xl">
+            <h2 class="text-3xl font-black italic uppercase mb-8 text-[#f39c12]">EDITOR DE MEMÉTICA</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                     <div id="prevBox" class="w-full aspect-square bg-black border border-gray-800 rounded-2xl flex items-center justify-center overflow-hidden mb-4">
-                        </div>
-                    <input type="text" id="editImgUrl" placeholder="URL de la imagen..." class="editor-input text-xs" onchange="updatePrev(this.value)">
+                        <span class="text-gray-800 font-black italic">SIN IMAGEN</span>
+                    </div>
+                    <input type="text" id="editImgUrl" placeholder="Pegar URL de imagen..." class="w-full bg-[#05080f] border border-gray-700 rounded p-3 text-xs text-white outline-none mb-3" onchange="updatePrev(this.value)">
                 </div>
-                
                 <div class="space-y-4">
-                    <div>
-                        <label class="text-[10px] text-gray-500 font-bold uppercase">Nombre</label>
-                        <input type="text" id="editName" class="editor-input font-bold">
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-gray-500 font-bold uppercase">Efectos</label>
-                        <textarea id="editDesc" class="editor-input h-32 text-sm"></textarea>
-                    </div>
+                    <input type="text" id="editName" placeholder="Nombre" class="w-full bg-[#05080f] border border-gray-700 rounded p-3 text-white font-bold outline-none">
+                    <textarea id="editDesc" placeholder="Descripción..." class="w-full bg-[#05080f] border border-gray-700 rounded p-3 text-white text-sm h-40 outline-none"></textarea>
                 </div>
             </div>
-
-            <div class="flex gap-4 mt-8">
-                <button onclick="saveToNeon()" class="btn-save shadow-lg">ACTUALIZAR DATOS</button>
-                <button onclick="closeModal()" class="px-8 text-gray-400 font-bold uppercase text-xs">Cerrar</button>
+            <div class="flex gap-4 mt-10">
+                <button onclick="saveToNeon()" class="btn-orange flex-grow py-4 text-white font-black uppercase rounded-lg">GUARDAR CAMBIOS</button>
+                <button onclick="closeModal()" class="px-10 bg-gray-800 text-gray-400 rounded-lg font-black uppercase text-xs">Cancelar</button>
             </div>
         </div>
     </div>
 
     <script>
         let isAdmin = localStorage.getItem('is_admin') === 'true';
-        let allMemetics = []; // Guardamos todo aquí para buscar por ID
-        let currentId = null;
+        let dataStore = { groups: {}, groupMeta: {} };
+        let currentActiveId = null;
 
         async function init() {
-            if (isAdmin) document.body.classList.add('is-admin');
+            if (isAdmin) {
+                document.body.classList.add('is-admin');
+                document.getElementById('authText').innerText = "LOGOUT";
+                document.getElementById('lockStatus').innerText = "🔓";
+            }
             const res = await fetch('/api/get_memetics');
-            const data = await res.json();
-            
-            // Convertimos el objeto de grupos en una lista plana para buscar fácil
-            allMemetics = Object.values(data.groups).flat();
+            dataStore = await res.json();
             render();
         }
 
         function render() {
-            const container = document.getElementById('content');
-            container.innerHTML = allMemetics.map(item => `
-                <div class="card-main p-6 flex gap-6">
-                    <div onclick="openEditor('${item.id}')" class="memetic-icon">
-                        ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover rounded-xl">` : `<span>${item.name[0]}</span>`}
-                    </div>
-                    <div>
-                        <h4 class="font-black uppercase italic">${item.name}</h4>
-                        <p class="text-gray-400 text-sm mt-2">${item.desc}</p>
-                    </div>
-                </div>
-            `).join('');
+            const container = document.getElementById('mainContainer');
+            container.innerHTML = '';
+            let total = 0;
+
+            Object.keys(dataStore.groupMeta).forEach(gid => {
+                const items = dataStore.groups[gid] || [];
+                total += items.length;
+                const section = document.createElement('div');
+                section.innerHTML = `
+                    <h3 class="text-xl font-black italic uppercase mb-8 border-l-4 border-[#f39c12] pl-4 text-[#f39c12]">${dataStore.groupMeta[gid].title}</h3>
+                    <div class="grid gap-6 md:grid-cols-2">
+                        ${items.map(item => `
+                            <div class="card-main p-6 flex gap-6">
+                                <div onclick="openEditor('${item.id}')" class="memetic-icon">
+                                    ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover rounded-lg">` : `<span>${item.name[0]}</span>`}
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-black uppercase italic text-lg leading-tight">${item.name}</h4>
+                                    <p class="text-gray-400 text-sm mt-3 leading-snug">
+                                        ${item.desc.replace(/\[(.*?)\]/g, '<span class="tag-orange">[$1]</span>')}
+                                    </p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>`;
+                container.appendChild(section);
+            });
+            document.getElementById('totalCount').innerText = total;
         }
 
         function openEditor(id) {
             if (!isAdmin) return;
+            currentActiveId = id;
+            const item = Object.values(dataStore.groups).flat().find(i => i.id == id);
             
-            // 1. Buscamos el item exacto que tocaste
-            const item = allMemetics.find(i => i.id == id);
-            if (!item) return;
-
-            currentId = id; // Guardamos el ID para saber cuál actualizar
-            
-            // 2. Llenamos el editor con lo que ya tiene en Neon
-            document.getElementById('editName').value = item.name;
-            document.getElementById('editDesc').value = item.desc;
-            document.getElementById('editImgUrl').value = item.image || '';
-            updatePrev(item.image);
-
+            if (item) {
+                document.getElementById('editName').value = item.name;
+                document.getElementById('editDesc').value = item.desc;
+                document.getElementById('editImgUrl').value = item.image || '';
+                updatePrev(item.image);
+            }
             document.getElementById('editModal').classList.remove('hidden');
         }
 
         async function saveToNeon() {
             const payload = {
-                id: currentId, // Enviamos el mismo ID para que haga UPDATE, no INSERT
+                id: currentActiveId,
                 name: document.getElementById('editName').value,
                 desc: document.getElementById('editDesc').value,
                 image: document.getElementById('editImgUrl').value,
@@ -130,29 +153,34 @@
             });
 
             if (res.ok) {
-                alert("¡Imagen y datos actualizados!");
+                alert("Guardado en Neon correctamente");
                 location.reload();
-            } else {
-                alert("Error al conectar con Neon");
+            } else { alert("Error de acceso o conexión"); }
+        }
+
+        function toggleAuth() {
+            if (isAdmin) { localStorage.clear(); location.reload(); }
+            else {
+                const user = prompt("Usuario:");
+                const pass = prompt("Contraseña:");
+                if (user === "electro995" && pass === "electro995") {
+                    localStorage.setItem('is_admin', 'true');
+                    location.reload();
+                } else { alert("Acceso Denegado"); }
             }
         }
 
         function updatePrev(src) {
-            const box = document.getElementById('prevBox');
-            box.innerHTML = src ? `<img src="${src}" class="w-full h-full object-cover">` : '<span class="text-gray-800 font-black text-4xl">?</span>';
+            document.getElementById('prevBox').innerHTML = src ? `<img src="${src}" class="w-full h-full object-cover">` : "SIN IMAGEN";
         }
 
         function closeModal() { document.getElementById('editModal').classList.add('hidden'); }
 
-        function toggleAuth() {
-            if (isAdmin) { localStorage.clear(); location.reload(); }
-            else { 
-                const pass = prompt("Admin Key:");
-                if (pass === "electro995") { 
-                    localStorage.setItem('is_admin', 'true'); 
-                    location.reload(); 
-                } 
-            }
+        function filter() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.card-main').forEach(c => {
+                c.style.display = c.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
+            });
         }
 
         init();
