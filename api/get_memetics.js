@@ -1,18 +1,22 @@
-const { Client } = require('pg');
+import pg from 'pg';
+const { Pool } = pg;
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 export default async function handler(req, res) {
-    const client = new Client({ connectionString: process.env.DATABASE_URL });
-    try {
-        await client.connect();
-        const groups = await client.query('SELECT * FROM groups ORDER BY id');
-        const memetics = await client.query('SELECT * FROM memetics ORDER BY name');
-        res.status(200).json({ 
-            groups: groups.rows, 
-            memetics: memetics.rows 
-        });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    } finally {
-        await client.end();
-    }
+  try {
+    // Traemos los datos directamente de Neon
+    const memetics = await pool.query('SELECT * FROM memetics ORDER BY name ASC');
+    const groups = await pool.query('SELECT * FROM groups ORDER BY id ASC');
+
+    res.status(200).json({
+      memetics: memetics.rows,
+      groups: groups.rows
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 }
