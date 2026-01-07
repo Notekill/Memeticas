@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     try {
         await client.connect();
         // Usa tus credenciales: electro995
-        if (user === 'electro995' && pass === 'tu_password_aqui') { 
+        if (user === 'electro995' && pass === 'electro995') {
             res.status(200).json({ auth: true });
         } else {
             res.status(401).json({ auth: false });
@@ -24,4 +24,5 @@ export default async function handler(req, res) {
     } finally {
         await client.end();
     }
+
 }
