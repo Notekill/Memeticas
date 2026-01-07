@@ -3,145 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MemeticDB - Way of Winter Pro</title>
+    <title>MemeticDB - Way of Winter</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,700;1,900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Roboto Condensed', sans-serif; background-color: #05080f; color: #ffffff; letter-spacing: 0.02em; }
+        body { font-family: 'Roboto Condensed', sans-serif; background-color: #05080f; color: #ffffff; }
         .search-container { background-color: #0d1421; border: 1px solid #1a2436; }
-        .card-main { background-color: #0b121f; border: 1px solid #1e293b; transition: all 0.3s; }
-        .btn-orange { background: linear-gradient(to bottom, #f39c12, #d35400); box-shadow: 0 4px 15px rgba(211, 84, 0, 0.3); }
+        .card-main { background-color: #0b121f; border: 1px solid #1e293b; transition: 0.3s; }
+        .btn-orange { background: linear-gradient(to bottom, #f39c12, #d35400); }
         .tag-orange { background: rgba(243, 156, 18, 0.1); border: 1px solid rgba(243, 156, 18, 0.3); color: #f39c12; }
         .modal-overlay { background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); display: none; }
-        .sortable-ghost { opacity: 0.1; background: #f39c12 !important; border: 2px dashed #f39c12; }
     </style>
 </head>
 <body class="p-4 md:p-10 min-h-screen">
     <div class="max-w-6xl mx-auto">
         <header class="flex justify-between items-center mb-10">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 bg-amber-500 rounded-lg flex items-center justify-center italic font-black text-black text-3xl">M</div>
+                <div class="w-12 h-12 bg-amber-500 rounded flex items-center justify-center font-black text-black text-2xl italic">M</div>
                 <div>
-                    <h1 class="text-4xl font-black italic uppercase leading-none tracking-tighter">MEMETIC<span class="text-amber-500">DB</span></h1>
-                    <p class="text-[10px] text-gray-500 font-bold tracking-[0.3em] uppercase mt-1">Way of Winter Edition</p>
+                    <h1 class="text-3xl font-black italic uppercase tracking-tighter">MEMETIC<span class="text-amber-500">DB</span></h1>
+                    <p class="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Way of Winter Edition</p>
                 </div>
             </div>
-            <button id="authBtn" onclick="toggleAuth()" class="border border-gray-700 text-gray-500 px-5 py-2 rounded text-xs font-bold uppercase hover:text-white transition-all">🔒 Login</button>
+            <button id="authBtn" onclick="openLogin()" class="text-gray-500 hover:text-white border border-gray-800 px-4 py-2 rounded text-xs font-bold uppercase transition-all">🔒 Login</button>
         </header>
 
         <div class="flex gap-4 mb-10">
-            <input type="text" id="searchInput" onkeyup="filterItems()" placeholder="Buscar..." class="search-container flex-grow rounded-md py-4 px-6 focus:outline-none text-gray-300">
-            <button id="addBtn" onclick="openEditModal()" class="btn-orange px-8 rounded font-bold uppercase text-black hidden shadow-lg">+ Nuevo</button>
+            <input type="text" id="searchInput" onkeyup="filterItems()" placeholder="Buscar especialización..." class="search-container flex-grow rounded-md py-4 px-6 focus:outline-none text-gray-300">
+            <div class="search-container px-6 flex items-center rounded-md border-l-4 border-amber-500">
+                <span class="text-2xl font-black text-amber-500" id="totalCount">0</span>
+            </div>
         </div>
 
-        <div id="groupsContainer" class="space-y-16">
-            </div>
-    </div>
-
-    <div id="editModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="bg-[#0d1421] border border-amber-500 p-8 rounded-lg w-full max-w-2xl overflow-y-auto max-h-[90vh]">
-            <h2 class="text-2xl font-black uppercase italic mb-6 text-amber-500">Configurar Ítem</h2>
-            <form id="editForm" class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                <div class="col-span-2">
-                    <label class="text-[10px] uppercase font-bold text-gray-500 tracking-widest">Nombre</label>
-                    <input type="text" id="itemName" class="w-full bg-black border border-gray-800 p-4 rounded mt-1 text-white">
-                </div>
-                <div>
-                    <label class="text-[10px] uppercase font-bold text-gray-500 tracking-widest">Categoría (Grupo)</label>
-                    <select id="itemGroup" class="w-full bg-black border border-gray-800 p-4 rounded mt-1 text-white"></select>
-                </div>
-                <div>
-                    <label class="text-[10px] uppercase font-bold text-gray-500 tracking-widest">Niveles (separados por comas)</label>
-                    <input type="text" id="itemLevels" class="w-full bg-black border border-gray-800 p-4 rounded mt-1 text-white">
-                </div>
-                <div class="col-span-2">
-                    <label class="text-[10px] uppercase font-bold text-gray-500 tracking-widest">URL de Foto / Icono</label>
-                    <input type="text" id="itemImg" placeholder="https://..." class="w-full bg-black border border-gray-800 p-4 rounded mt-1 text-white">
-                </div>
-                <div class="col-span-2">
-                    <label class="text-[10px] uppercase font-bold text-gray-500 tracking-widest">Descripción</label>
-                    <textarea id="itemDesc" rows="3" class="w-full bg-black border border-gray-800 p-4 rounded mt-1 text-white"></textarea>
-                </div>
-                <div class="col-span-2 flex gap-4 mt-4">
-                    <button type="button" onclick="saveToNeon()" class="flex-1 py-4 btn-orange rounded font-bold uppercase text-black">Guardar en Base de Datos</button>
-                    <button type="button" onclick="closeModal()" class="px-8 py-4 bg-gray-900 rounded font-bold uppercase">Cerrar</button>
-                </div>
-            </form>
+        <div id="groupsContainer" class="space-y-12">
+            <div class="text-center py-20 text-gray-600 animate-pulse uppercase font-bold tracking-widest">Conectando con Neon...</div>
         </div>
     </div>
 
     <div id="loginModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center">
         <div class="bg-[#0d1421] border border-amber-500 p-8 rounded-lg w-full max-w-sm">
             <h2 class="text-xl font-black uppercase mb-6 text-center italic text-white">Acceso Editor</h2>
-            <input type="text" id="user" placeholder="Usuario" class="w-full bg-black border border-gray-800 p-4 rounded mb-3 text-white">
-            <input type="password" id="pass" placeholder="Contraseña" class="w-full bg-black border border-gray-800 p-4 rounded mb-6 text-white">
-            <button onclick="handleLogin()" class="w-full py-4 btn-orange rounded font-bold uppercase text-black">Ingresar</button>
+            <input type="text" id="user" placeholder="Usuario" class="w-full bg-black border border-gray-800 p-4 rounded mb-3 text-white outline-none">
+            <input type="password" id="pass" placeholder="Contraseña" class="w-full bg-black border border-gray-800 p-4 rounded mb-6 text-white outline-none">
+            <button onclick="handleLogin()" class="w-full py-4 btn-orange rounded font-bold uppercase text-black">Entrar</button>
+            <button onclick="closeModal()" class="w-full mt-4 text-xs text-gray-600 uppercase">Cerrar</button>
         </div>
     </div>
 
     <script>
-        let isAdmin = localStorage.getItem('admin') === 'true';
         let rawData = null;
+        let isAdmin = localStorage.getItem('admin') === 'true';
 
         async function loadData() {
             try {
+                // Petición directa sin bloqueos de login
                 const res = await fetch('/api/get_memetics'); 
                 rawData = await res.json();
                 renderApp();
-            } catch (err) { console.error("Error Neon:", err); }
+            } catch (err) {
+                document.getElementById('groupsContainer').innerHTML = "<div class='text-red-500 text-center font-bold'>ERROR AL CARGAR DATOS DE NEON</div>";
+            }
         }
 
         function renderApp() {
             const container = document.getElementById('groupsContainer');
             container.innerHTML = '';
-            
-            const select = document.getElementById('itemGroup');
-            select.innerHTML = rawData.groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+            let total = 0;
 
             rawData.groups.forEach(group => {
                 const items = rawData.memetics.filter(m => m.group_id === group.id);
-                if (items.length === 0 && !isAdmin) return;
+                if (items.length === 0) return;
+                total += items.length;
 
                 const section = document.createElement('div');
                 section.innerHTML = `
-                    <div class="flex items-center gap-4 mb-6 border-l-4 border-amber-500 pl-4">
-                        <h3 class="text-2xl font-black uppercase italic text-amber-500">${group.name}</h3>
-                    </div>
-                    <div id="group-${group.id}" class="grid gap-6 md:grid-cols-2">
+                    <h3 class="text-xl font-black uppercase italic text-amber-500 mb-6 border-l-4 border-amber-500 pl-4">${group.name}</h3>
+                    <div class="grid gap-4 md:grid-cols-2">
                         ${items.map(item => `
-                            <div class="card-main rounded p-6 flex gap-6 relative group" data-id="${item.id}">
-                                <div class="w-20 h-20 shrink-0 bg-amber-500 rounded-full flex items-center justify-center border-4 border-black overflow-hidden shadow-2xl">
-                                    ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<span class="text-3xl font-black text-black">${item.name.charAt(0)}</span>`}
+                            <div class="card-main p-6 rounded flex gap-5">
+                                <div class="w-16 h-16 shrink-0 bg-amber-500 rounded-full flex items-center justify-center border-4 border-black overflow-hidden shadow-lg">
+                                    ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<span class="text-2xl font-black text-black italic">${item.name.charAt(0)}</span>`}
                                 </div>
-                                <div class="flex-1">
-                                    <h2 class="text-white text-xl font-bold uppercase italic">${item.name}</h2>
-                                    <p class="text-gray-400 text-sm my-3 leading-snug">${item.description}</p>
-                                    <div class="flex gap-2">
-                                        ${(item.levels || '').split(',').map(l => l.trim() ? `<span class="tag-orange px-2 py-1 rounded text-[10px] font-bold uppercase">${l.trim()}</span>` : '').join('')}
-                                        ${isAdmin ? `<button onclick="openEditModal('${item.id}')" class="ml-auto text-[10px] text-amber-500 font-black uppercase underline">Editar</button>` : ''}
+                                <div>
+                                    <h4 class="text-white font-bold uppercase italic">${item.name}</h4>
+                                    <p class="text-gray-400 text-sm mt-2">${item.description}</p>
+                                    <div class="flex gap-2 mt-3">
+                                        ${(item.levels || '').split(',').map(l => `<span class="tag-orange px-2 py-0.5 rounded text-[10px] font-bold">${l.trim()}</span>`).join('')}
                                     </div>
                                 </div>
                             </div>
                         `).join('')}
                     </div>`;
                 container.appendChild(section);
-
-                if (isAdmin) {
-                    new Sortable(document.getElementById(`group-${group.id}`), {
-                        group: 'memetics',
-                        animation: 300,
-                        ghostClass: 'sortable-ghost',
-                        onEnd: () => console.log("Reordenado")
-                    });
-                }
             });
-
+            document.getElementById('totalCount').innerText = total;
+            
             if(isAdmin) {
-                document.getElementById('addBtn').classList.remove('hidden');
                 document.getElementById('authBtn').innerText = "🔓 Logout";
+                document.getElementById('authBtn').classList.add('text-amber-500', 'border-amber-500');
             }
         }
+
+        function openLogin() { 
+            if(isAdmin) { localStorage.removeItem('admin'); location.reload(); }
+            else { document.getElementById('loginModal').style.display = 'flex'; }
+        }
+
+        function closeModal() { document.getElementById('loginModal').style.display = 'none'; }
 
         async function handleLogin() {
             const user = document.getElementById('user').value;
@@ -152,28 +121,14 @@
                 body: JSON.stringify({ user, pass })
             });
             if (res.ok) { localStorage.setItem('admin', 'true'); location.reload(); }
-            else { alert("Acceso denegado"); }
+            else { alert("Credenciales incorrectas"); }
         }
 
-        function toggleAuth() {
-            if(isAdmin) { localStorage.removeItem('admin'); location.reload(); }
-            else { document.getElementById('loginModal').style.display = 'flex'; }
+        function filterItems() {
+            const t = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.card-main').forEach(c => c.style.display = c.innerText.toLowerCase().includes(t) ? 'flex' : 'none');
         }
 
-        function openEditModal(id = null) {
-            document.getElementById('editModal').style.display = 'flex';
-            if(id) {
-                const item = rawData.memetics.find(m => m.id == id);
-                document.getElementById('itemName').value = item.name;
-                document.getElementById('itemGroup').value = item.group_id;
-                document.getElementById('itemLevels').value = item.levels || '';
-                document.getElementById('itemImg').value = item.image || '';
-                document.getElementById('itemDesc').value = item.description;
-            }
-        }
-
-        function closeModal() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
-        
         loadData();
     </script>
 </body>
