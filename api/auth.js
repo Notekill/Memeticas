@@ -1,12 +1,14 @@
-export default async function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).end();
-    
-    const { user, pass } = req.body;
+export default function handler(req, res) {
+  const { user, pass } = req.body;
 
-    // Validación usando las variables secretas de Vercel
-    if (user === process.env.ADMIN_USER && pass === process.env.ADMIN_PASS) {
-        return res.status(200).json({ authorized: true });
-    } else {
-        return res.status(401).json({ authorized: false });
-    }
+  // IMPORTANTE: Los nombres deben coincidir con Vercel
+  const validUser = process.env.ADMIN_USER;
+  const validPass = process.env.ADMIN_PASS;
+
+  if (user === validUser && pass === validPass) {
+    return res.status(200).json({ auth: true });
+  } else {
+    // Esto es lo que ves en el alert cuando falla
+    return res.status(401).json({ auth: false, error: "Acceso Denegado" });
+  }
 }
