@@ -12,7 +12,7 @@
         .card-main { background-color: #0b121f; border: 1px solid #1e293b; transition: all 0.3s ease; }
         .card-main:hover { border-color: #f39c12; }
         
-        /* Icono/Letra Naranja (Tu diseño original) */
+        /* Icono de Letra Naranja (Clickable para Admin) */
         .memetic-icon { 
             width: 80px; height: 80px; background: #f39c12; border-radius: 12px; 
             display: flex; align-items: center; justify-content: center; 
@@ -22,9 +22,11 @@
         body.is-admin .memetic-icon { cursor: pointer; }
         body.is-admin .memetic-icon:hover { transform: scale(1.05); border-color: #fff; }
 
-        .btn-orange { background: linear-gradient(to bottom, #f39c12, #d35400); box-shadow: 0 4px 15px rgba(211, 84, 0, 0.3); }
+        /* Estilos de Login y Editor (Basados en tus capturas) */
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.92); backdrop-filter: blur(10px); }
+        .login-panel { background-color: #0d1421; border: 1px solid #f39c12; box-shadow: 0 0 40px rgba(243, 156, 18, 0.2); }
+        .btn-orange { background: linear-gradient(to bottom, #f39c12, #d35400); }
         .tag-orange { color: #f39c12; font-weight: 700; }
-        .modal-overlay { background-color: rgba(0, 0, 0, 0.9); backdrop-filter: blur(8px); }
     </style>
 </head>
 <body class="p-4 md:p-10 min-h-screen">
@@ -34,24 +36,36 @@
             <div class="flex items-center gap-4">
                 <div class="w-14 h-14 bg-[#f39c12] rounded-lg flex items-center justify-center font-black text-black text-3xl italic">M</div>
                 <div>
-                    <h1 class="text-4xl font-black italic uppercase leading-none">MEMETIC<span class="text-[#f39c12]">DB</span></h1>
+                    <h1 class="text-4xl font-black italic uppercase leading-none tracking-tighter">MEMETIC<span class="text-[#f39c12]">DB</span></h1>
                     <p class="text-[11px] text-gray-500 font-bold tracking-[0.3em] uppercase mt-1">Way of Winter Edition</p>
                 </div>
             </div>
-            <button id="authBtn" onclick="toggleAuth()" class="border border-gray-600 text-gray-400 px-4 py-2 rounded uppercase text-xs font-bold hover:text-white">
+            <button id="authBtn" onclick="toggleAuth()" class="border border-gray-600 text-gray-400 px-4 py-2 rounded uppercase text-[10px] font-bold tracking-widest hover:text-white">
                 <span id="lockStatus">🔒</span> <span id="authText">ADMIN LOGIN</span>
             </button>
         </header>
 
         <div class="flex flex-col md:flex-row gap-4 mb-16">
-            <input type="text" id="searchInput" onkeyup="filter()" placeholder="BUSCAR POR NOMBRE O #TAG (EJ: #AMMO)..." 
+            <input type="text" id="searchInput" onkeyup="filter()" placeholder="BUSCAR ESPECIALIZACIÓN..." 
                 class="search-container flex-grow rounded-md py-5 px-8 outline-none text-lg text-gray-300">
             <div class="search-container rounded-md px-10 flex items-center border-b-4 border-[#f39c12]">
                 <span class="text-3xl font-black text-[#f39c12]" id="totalCount">0</span>
             </div>
         </div>
 
-        <div id="mainContainer" class="space-y-20"></div>
+        <div id="mainContainer" class="space-y-16"></div>
+    </div>
+
+    <div id="loginModal" class="fixed inset-0 modal-overlay hidden z-[60] flex items-center justify-center p-4">
+        <div class="login-panel w-full max-w-sm rounded-lg p-8 text-center">
+            <h2 class="text-2xl font-black italic uppercase mb-8 text-white tracking-widest">EDITOR ACCESS</h2>
+            <div class="space-y-4">
+                <input type="text" id="userIn" placeholder="User" class="w-full bg-[#05080f] border border-gray-800 rounded p-4 text-white text-center outline-none focus:border-[#f39c12]">
+                <input type="password" id="passIn" placeholder="Password" class="w-full bg-[#05080f] border border-gray-800 rounded p-4 text-white text-center outline-none focus:border-[#f39c12]">
+                <button onclick="doLogin()" class="w-full py-4 btn-orange text-white font-black uppercase rounded shadow-lg">LOGIN</button>
+            </div>
+            <button onclick="closeModals()" class="mt-6 text-[10px] text-gray-500 uppercase font-bold tracking-widest hover:text-white">Cancel</button>
+        </div>
     </div>
 
     <div id="editModal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
@@ -65,13 +79,13 @@
                     <input type="text" id="editImgUrl" placeholder="Pegar URL de imagen..." class="w-full bg-[#05080f] border border-gray-700 rounded p-3 text-xs text-white outline-none mb-3" onchange="updatePrev(this.value)">
                 </div>
                 <div class="space-y-4">
-                    <input type="text" id="editName" placeholder="Nombre" class="w-full bg-[#05080f] border border-gray-700 rounded p-3 text-white font-bold outline-none">
-                    <textarea id="editDesc" placeholder="Descripción..." class="w-full bg-[#05080f] border border-gray-700 rounded p-3 text-white text-sm h-40 outline-none"></textarea>
+                    <input type="text" id="editName" class="w-full bg-[#05080f] border border-gray-700 rounded p-3 text-white font-bold outline-none">
+                    <textarea id="editDesc" class="w-full bg-[#05080f] border border-gray-700 rounded p-3 text-white text-sm h-40 outline-none"></textarea>
                 </div>
             </div>
             <div class="flex gap-4 mt-10">
                 <button onclick="saveToNeon()" class="btn-orange flex-grow py-4 text-white font-black uppercase rounded-lg">GUARDAR CAMBIOS</button>
-                <button onclick="closeModal()" class="px-10 bg-gray-800 text-gray-400 rounded-lg font-black uppercase text-xs">Cancelar</button>
+                <button onclick="closeModals()" class="px-10 bg-gray-800 text-gray-400 rounded-lg font-black uppercase text-xs">Cancelar</button>
             </div>
         </div>
     </div>
@@ -79,7 +93,7 @@
     <script>
         let isAdmin = localStorage.getItem('is_admin') === 'true';
         let dataStore = { groups: {}, groupMeta: {} };
-        let currentActiveId = null;
+        let currentId = null;
 
         async function init() {
             if (isAdmin) {
@@ -123,11 +137,21 @@
             document.getElementById('totalCount').innerText = total;
         }
 
+        function doLogin() {
+            const u = document.getElementById('userIn').value;
+            const p = document.getElementById('passIn').value;
+            if (u === "electro995" && p === "electro995") {
+                localStorage.setItem('is_admin', 'true');
+                location.reload();
+            } else {
+                alert("Acceso Denegado");
+            }
+        }
+
         function openEditor(id) {
             if (!isAdmin) return;
-            currentActiveId = id;
+            currentId = id;
             const item = Object.values(dataStore.groups).flat().find(i => i.id == id);
-            
             if (item) {
                 document.getElementById('editName').value = item.name;
                 document.getElementById('editDesc').value = item.desc;
@@ -139,7 +163,7 @@
 
         async function saveToNeon() {
             const payload = {
-                id: currentActiveId,
+                id: currentId,
                 name: document.getElementById('editName').value,
                 desc: document.getElementById('editDesc').value,
                 image: document.getElementById('editImgUrl').value,
@@ -153,28 +177,24 @@
             });
 
             if (res.ok) {
-                alert("Guardado en Neon correctamente");
+                alert("Actualizado en la Base de Datos");
                 location.reload();
-            } else { alert("Error de acceso o conexión"); }
+            }
         }
 
         function toggleAuth() {
             if (isAdmin) { localStorage.clear(); location.reload(); }
-            else {
-                const user = prompt("Usuario:");
-                const pass = prompt("Contraseña:");
-                if (user === "electro995" && pass === "electro995") {
-                    localStorage.setItem('is_admin', 'true');
-                    location.reload();
-                } else { alert("Acceso Denegado"); }
-            }
+            else { document.getElementById('loginModal').classList.remove('hidden'); }
         }
 
         function updatePrev(src) {
             document.getElementById('prevBox').innerHTML = src ? `<img src="${src}" class="w-full h-full object-cover">` : "SIN IMAGEN";
         }
 
-        function closeModal() { document.getElementById('editModal').classList.add('hidden'); }
+        function closeModals() { 
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('editModal').classList.add('hidden');
+        }
 
         function filter() {
             const q = document.getElementById('searchInput').value.toLowerCase();
